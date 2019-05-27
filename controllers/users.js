@@ -1,4 +1,4 @@
-const Student = require('../models/user');
+const User = require('../models/user');
 
 module.exports = {
   index,
@@ -8,14 +8,28 @@ module.exports = {
 };
 
 function index(req, res, next) {
-    console.log('req', req);
-  User.find({}, function(err, user) {
-    if (err) return next(err);
-    res.render('index', {
-      user,
-      name: req.query.name,
-    });
-  });
+    console.log('req.user', req.user);
+    if (!req.user) {
+    res.render('index', {user: null});
+    }
+    else {
+        res.render('index', {
+            user: req.user,
+            name: req.query.name,
+          });
+    // User.find({_id: req.user.googleId} ,function(err, user) {
+    //     if (err) {
+    //         res.render('index', {user:null});
+    //     }
+    //     else {
+    //         console.log('user', user);
+    //         res.render('index', {
+    //             user,
+    //             name: req.query.name,
+    //           });
+    //     }
+    // });
+    }
 }
 
 function addList(req, res, next) {

@@ -23,11 +23,11 @@ passport.use(new GoogleStrategy({
           lists: [
             {
               name: 'Going To Watch',
-              list: []
+              shows: []
             },
             {
               name: 'Watched',
-              list: []
+              shows: []
             }
           ]
         });

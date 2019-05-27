@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 
 var listSchema = new mongoose.Schema({
   name: String,
-  list: []
+  shows: []
 });
 
 var userSchema = new mongoose.Schema({
