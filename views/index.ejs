@@ -19,6 +19,224 @@
 		aside section button { display: block; margin: 5px auto; }
 		aside section textarea { display: block; width: 400px; max-width: 80%; height: 200px; margin: 10px auto; }
   	</style>
+  	    <script>
+/*********************************************/
+//	API
+;((document)=>{
+	var searchBox, searchResults;
+  
+  	document.addEventListener("DOMContentLoaded", searchInit);
+  
+  	function searchInit(){
+    	searchResults = document.querySelector("#searchresults");
+      	searchBox = document.querySelector("#search");
+      	searchBox.addEventListener("keyup", handleKeyup);
+    }
+  
+  	function handleKeyup(e){
+      	//was it the "return" key?
+    	if (e.keyCode !== 13) return;
+        //yes, it was
+      	apiSearch(searchBox.value, populateSearchResults);
+      	searchBox.value = "";
+    }
+  
+  	function apiSearch(searchString, callback){
+    	fetch("http://api.tvmaze.com/search/shows?q=" + encodeURI(searchString)).then(res => res.json()).then(callback);
+    }
+  
+  	function populateSearchResults(data){
+    	console.log(data);
+      	let html = "";
+      	data.forEach(datum => {
+          	if (!datum || !datum.show || !datum.show.image || !datum.show.image.medium) return;
+        	let src = datum.show.image.medium,
+                showId = datum.show.id,
+                showName = datum.show.name,
+                img = `<li><img src="${src}" alt="${showName}" data-showId="${showId}" /></li>`;
+         	html += img;
+        });
+      	searchResults.innerHTML = html;
+      	addDragEventsToListItems(searchResults);
+		addModalEventsToListItems(searchResults);
+    }
+	
+	function apiGetSingle(id, callback) {
+		fetch("http://api.tvmaze.com/shows/" + id).then(res => res.json()).then(callback);
+	}
+  
+//})(document);
+      
+/*********************************************/
+//	DRAG AND DROP
+//;((document)=>{
+	var draggedElement = null;
+	
+	document.addEventListener("DOMContentLoaded", dragInit);
+	
+	function dragInit(){
+		addDragEventsToListItems(document);
+		document.querySelectorAll("ul, #trash").forEach(addDragEventsToContainer);
+	}
+  
+  	function addDragEventsToListItems(container){
+    	container.querySelectorAll("li").forEach(li => {
+			li.addEventListener("dragstart", handleDragstart);
+			li.addEventListener("dragenter", handleDragenter);
+			li.addEventListener("drop", handleDrop);
+		});
+    }
+	
+	function addDragEventsToContainer(elem){
+		elem.addEventListener("dragover", handleDragover);
+		elem.addEventListener("drop", handleDrop);
+	}
+	
+	function handleDragstart(e){
+		e.dataTransfer.effectAllowed = "move";
+		e.dataTransfer.setData("text/plain", null);
+		draggedElement = e.currentTarget;
+	}
+	
+	function handleDragenter(e){
+		e.preventDefault();
+		if (isBefore(e.currentTarget, draggedElement)){
+			e.currentTarget.parentElement.insertBefore(draggedElement, e.currentTarget);
+		}
+		else {
+			e.currentTarget.parentElement.insertBefore(draggedElement, e.currentTarget.nextElementSibling);
+		}
+	}
+	
+	function handleDragover(e){
+		e.preventDefault();
+		e.dataTransfer.effectAllowed = "move";
+	}
+	
+	function handleDrop(e){
+		e.preventDefault();
+		//rearranging?
+		if (e.currentTarget.tagName.toLowerCase() === "li"){
+			e.stopPropagation();
+			return;
+		}
+		//trashing?
+		if (e.currentTarget.id === "trash"){
+			e.stopPropagation();
+			draggedElement.outerHTML = "";
+			return;
+		}
+		//add to ul
+		e.currentTarget.appendChild(draggedElement);
+	}
+	
+	function isBefore(elemA, elemB){
+        if (elemA.parentElement === elemB.parentElement){
+			//both elements have the same parent
+            for (let elem = elemB; elem; elem = elem.previousElementSibling){
+				//return true if elemB comes before elemA
+                if (elem === elemA) return true;
+            }
+        }
+        return false;
+    }
+	
+//})(document);
+      
+/*********************************************/
+//	MODAL WINDOW
+//;((document)=>{
+	var modal;
+
+	document.addEventListener("DOMContentLoaded", modalInit);
+	
+	function modalInit(){
+		modal = document.querySelector("aside");
+		modal.addEventListener("click", closeModal);
+		addModalEventsToListItems(document);
+	}
+	
+	function addModalEventsToListItems(container){
+		container.querySelectorAll("li").forEach(li => {
+			li.addEventListener("click", getModalData);
+		});
+	}
+	
+	function getModalData(e){
+		apiGetSingle(e.target.getAttribute("data-showId"), displayModal);
+	}
+	
+	function displayModal(data){
+		console.log(data);
+		let html = "<section>";
+		html += `<img src="${data.image.medium}" alt="${data.name}" />`;
+		html += `<h3>${data.name}</h3>`;
+		html += `<p>${data.summary}</p>`;
+		html += `<h4>Your Review of ${data.name}</h4>`;
+		html += "</section>";
+		modal.innerHTML = html;
+		getReview(modal.querySelector("section"), data.id);
+		modal.className = "modal";
+	}
+	
+	function closeModal(){
+		modal.className = "";
+	}
+	
+//})(document);
+      
+/*********************************************/
+//	REVIEWS
+//;((document)=>{
+
+	function getReview(container, showId){
+		//get review for user by showId
+		//if there's already a review
+		
+		//no review yet
+		let button = document.createElement("button");
+		button.textContent = "Create Review";
+		container.append(button);
+		button.addEventListener("click", function(e){
+			e.stopPropagation();
+			let container = e.target.parentElement;
+			e.target.outerHTML = "";
+			getAddReviewForm(container, showId);			
+		});
+	}
+	
+	function getAddReviewForm(container, showId){
+		let textarea = document.createElement("textarea"),
+			button = document.createElement("button");
+		button.textContent = "Save Review";
+		container.appendChild(textarea);
+		textarea.focus();
+		container.appendChild(button);
+		textarea.addEventListener("keyup", e => {
+			if (e.keyCode === 13) button.click();
+		});
+		button.addEventListener("click", e => {
+			addReview(e, showId);
+		});
+	}
+	
+	function addReview(e, showId){
+		e.stopPropagation();
+		let review = e.target.previousElementSibling.value;
+		console.log("review", review);
+		//send review to back end
+		
+		//retrieve review from back end to ensure success
+		let container = e.target.parentElement;
+		e.target.previousElementSibling.outerHTML = "";
+		e.target.outerHTML = "";
+		getReview(container, showId);
+	}
+	
+	
+})(document);
+/*********************************************/
+  	</script>
 </head>
 <body>
     <header>
@@ -37,15 +255,21 @@
     <main>
         <h2>Search Results</h2>
         <ul id="searchresults"></ul>
-      	<!--
-        <h2>Watch List</h2>
-        <ul id="watchlist"></ul>
-        <h2>Watched List</h2>
-        <ul id="watchedlist"></ul>
-		-->
+      	<% if (user && user.lists.length) { %>
+          	<% user.lists.forEach(function(list) { %>
+                <h2><%= list.name %></h2>
+                <ul>
+                  	<% list.shows.forEach(function(show) { %>
+                        <li><%= show %></li>
+                    <% }) %>
+                </ul>
+            <% }) %>
+        <% } %>
   	</main>
     <footer>
-  		<!-- <div id="trash"></div> -->
+      	<% if (user) { %>
+  			<div id="trash"></div>
+        <% } %>
   	</footer>
 	<aside></aside>
 </body>
