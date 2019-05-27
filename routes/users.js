@@ -1,11 +1,10 @@
 var express = require('express');
 var router = express.Router();
+var userCtrl = require('../controllers/users');
 
 /* GET users listing. */
 //login page/new user page 
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+router.get('/', userCtrl.index);
 
 //authenticate user 
 router.post('/login', function(req, res) {

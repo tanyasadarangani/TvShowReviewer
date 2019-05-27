@@ -1,11 +1,52 @@
+
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+    <title>TV Show Reviewer</title>
+    <style>
+  		ul { list-style-type: none; padding: 5px; border: 2px solid black; text-align: center; font-size: 0; min-height: 50px; }
+		#trash { width: 50px; height: 50px; background-image: url("http://icons.iconarchive.com/icons/designcontest/ecommerce-business/256/trash-icon.png"); background-size: contain; margin: 25px; float: right; border: 0; }
+		li { display: inline-block; margin: 5px; transition: transform 0.25s; }
+		li:hover { cursor: pointer; transform: scale(1.1); }
+		li img { height: 150px; }
+		aside { display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.6); }
+		aside.modal { display: flex; justify-content: center; align-items: center; }
+		aside section { background-color: white; padding: 10px; max-width: 650px; }
+		aside section img { float: left; margin: 10px; }
+		aside section h4 { clear: both; text-align: center;}
+		aside section button { display: block; margin: 5px auto; }
+		aside section textarea { display: block; width: 400px; max-width: 80%; height: 200px; margin: 10px auto; }
+  	</style>
+</head>
+<body>
+    <header>
+        <h1><img src="logo.png" alt="TV Show Reviewer" /></h1>
+        <nav>
+      		<input type="text" id="search" placeholder="Search for TV Shows" />
+          	<% if (user) { %>
+                <button id="addlist">Add Custom List</button>
+                <button id="profile"><img src="profile.png" alt="User Profile" /></button>
+                <a href="/logout">Logout</a>
+            <% } else { %>
+                <a href="/auth/google">Login</a>
+            <% } %>
+      	</nav>
+  	</header>
+    <main>
+        <h2>Search Results</h2>
+        <ul id="searchresults"></ul>
+      	<!--
+        <h2>Watch List</h2>
+        <ul id="watchlist"></ul>
+        <h2>Watched List</h2>
+        <ul id="watchedlist"></ul>
+		-->
+  	</main>
+    <footer>
+  		<!-- <div id="trash"></div> -->
+  	</footer>
+	<aside></aside>
+</body>
 </html>
