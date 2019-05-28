@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-    <title>TV Show Reviewer</title>
+    <title>Véritable Critique</title>
     <style>
 		body { margin: 0; }
 		header, footer { text-align: center; }
@@ -40,16 +40,19 @@
 	else var document = window.document;
 
 	document.addEventListener("DOMContentLoaded", function(){
+      	//with or without logged in user
 		SEARCH.init();
-      	PROFILE.init();
-		LIST.init();
-		MODAL.init();
-		DRAG.init();
+      	//only with logged in user
+      	if (user) {
+            PROFILE.init();
+            LIST.init();
+          	MODAL.init();
+            DRAG.init();
+        }
 	});
 /***********************************************************/
 
 const USER = {};
-USER._id = null;
 USER.name = null;
 USER.pic = null;
 USER.lists = [];
@@ -72,8 +75,13 @@ USER.update = function userUpdate(mustUpdateLists=true){
 	//get data from HTML
 	if (mustUpdateLists) USER.updateLists();
 	//send updated user data to server
-	console.log(USER.getData());
-	
+  	let data = USER.getData();
+	console.log(data);
+	fetch("user/update/" + user._id, {
+    	method: "POST",
+      	headers: {"Accept": "application/json", "Content-Type": "application/json"},
+      	body: JSON.stringify(data)
+    });
 }
 USER.updateLists = function userUpdateLists(){
 	let lists = document.querySelectorAll("main ul:first-of-type ~ *");
@@ -150,8 +158,10 @@ SEARCH.populateResults = function searchPopulateResults(data){
          html += img;
     });
     SEARCH.resultsBox.innerHTML = html;
-	DETAIL.addEvents(SEARCH.resultsBox);
-	DRAG.addDraggableEvents(SEARCH.resultsBox.querySelectorAll("li"));
+  	if (user){ //for logged-in users only
+		DETAIL.addEvents(SEARCH.resultsBox);
+		DRAG.addDraggableEvents(SEARCH.resultsBox.querySelectorAll("li"));
+    }
 }
 
 
@@ -161,10 +171,14 @@ PROFILE.init = function profileInit(){
 	let button = document.querySelector("#profile");
 	button.addEventListener("click", PROFILE.handleClick);
 	PROFILE.pic = button.querySelector("img");
-	PROFILE.update();
+  	if (user){
+    	USER.name = PROFILE.pic.getAttribute("alt");
+      	USER.pic = PROFILE.pic.src;
+    }
+  	else PROFILE.update();
 }
 PROFILE.update = function profileUpdate(){
-	PROFILE.pic.src = USER.pic || "http://iconshow.me/media/images/Mixed/small-n-flat-icon/png/512/user-alt.png";
+	PROFILE.pic.src = USER.pic || "https://pluspng.com/img-png/png-user-icon-circled-user-icon-2240.png";
 	if (USER.name) PROFILE.pic.setAttribute("alt", USER.name + " Profile");
 	else PROFILE.pic.setAttribute("alt", "User Profile");
 }
@@ -178,7 +192,7 @@ PROFILE.handleClick = function profileHandleClick(e){
 	picInput.setAttribute("placeholder", "Image URL");
 	picInput.value = USER.pic || "";
 	[nameInput, picInput].forEach(input => {
-		input.addEventListener("keyup", PROFILE.handleKeyup);
+      input.addEventListener("keyup", PROFILE.handleKeyup);
 		//stops the modal window from closing
 		input.addEventListener("click", e => e.stopPropagation());
 	});
@@ -210,6 +224,16 @@ PROFILE.handleSaveClick = function profileHandleSaveClick(e){
 const LIST = {};
 LIST.init = function listInit(){
 	document.querySelector("#addList").addEventListener("click", LIST.handleDrop);
+  	//get API images for each show by showId
+  	document.querySelectorAll("ul:not(:first-of-type) img").forEach(img => {
+    	let showId = img.getAttribute("data-showId");
+      	API.getSingle(showId, LIST.loadImage);
+    });
+}
+LIST.loadImage = function listLoadImage(data){
+	let img = document.querySelector(`img[data-showId="${data.id}"]`);
+	img.src = data.image.medium;
+  	img.alt = data.name;
 }
 LIST.handleDrop = function listHandleDrop(e, dragElement){
 	let h2 = document.createElement("h2"),
@@ -471,14 +495,17 @@ DRAG.isBefore = function dragIsBefore(elemA, elemB){
 /***********************************************************/
 })(window, document);
   	</script>
+  	<% if (user) { %>
+        <script>const user = {_id:"<%= `${user.id}` %>"}; console.log(user);</script>
+    <% } %>
 </head>
 <body>
     <header>
-        <h1><img src="logo.png" alt="TV Show Reviewer" /></h1>
+        <h1><img src="logo.png" alt="Véritable Critique" /></h1>
       	<nav>
           	<input type="text" id="search" placeholder="Search for TV Shows" />
             <% if (user) { %>
-				<button id="profile"><img src="profile.png" alt="User Profile" /></button>
+				<button id="profile"><img src="<%= user.pic %>" alt="<%= user.name %> Profile" /></button>
                 <a href="../logout">Logout</a>
             <% } else { %>
                 <a href="/auth/google">Login</a>
@@ -493,7 +520,7 @@ DRAG.isBefore = function dragIsBefore(elemA, elemB){
                 <h2><%= list.name %></h2>
                 <ul>
                   	<% list.shows.forEach(function(show) { %>
-                        <li><%= show %></li>
+                        <li><img src="https://cdn.dribbble.com/users/702004/screenshots/2834791/material-loader.gif" alt="" data-showId="<%= show %>" /></li>
                     <% }) %>
                 </ul>
             <% }) %>

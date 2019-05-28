@@ -9,6 +9,8 @@ var listSchema = new mongoose.Schema({
 var userSchema = new mongoose.Schema({
     name: String,
     email: String,
+    pic: String,
+    reviews: {},
     lists: [listSchema],
     googleId: String
   }
