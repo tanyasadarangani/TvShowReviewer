@@ -32,7 +32,6 @@
       	searchBox = document.querySelector("#search");
       	searchBox.addEventListener("keyup", handleKeyup);
     }
-  
   	function handleKeyup(e){
       	//was it the "return" key?
     	if (e.keyCode !== 13) return;
@@ -40,11 +39,9 @@
       	apiSearch(searchBox.value, populateSearchResults);
       	searchBox.value = "";
     }
-  
   	function apiSearch(searchString, callback){
     	fetch("http://api.tvmaze.com/search/shows?q=" + encodeURI(searchString)).then(res => res.json()).then(callback);
     }
-  
   	function populateSearchResults(data){
     	console.log(data);
       	let html = "";
