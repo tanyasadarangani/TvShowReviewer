@@ -87,7 +87,6 @@ API.getSingle = function apiGetSingle(id, callback) {
 	fetch("http://api.tvmaze.com/shows/" + encodeURI(id)).then(res => res.json()).then(callback);
 }
 
-
 const SEARCH = {};
 SEARCH.input = null;
 SEARCH.resultsBox = null;
