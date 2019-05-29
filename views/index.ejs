@@ -81,10 +81,10 @@ USER.updateLists = function userUpdateLists(){
 
 const API = {};
 API.search = function apiSearch(searchString, callback){
-	fetch("http://api.tvmaze.com/search/shows?q=" + encodeURI(searchString)).then(res => res.json()).then(callback);
+	fetch("https://api.tvmaze.com/search/shows?q=" + encodeURI(searchString)).then(res => res.json()).then(callback);
 }
 API.getSingle = function apiGetSingle(id, callback) {
-	fetch("http://api.tvmaze.com/shows/" + encodeURI(id)).then(res => res.json()).then(callback);
+	fetch("https://api.tvmaze.com/shows/" + encodeURI(id)).then(res => res.json()).then(callback);
 }
 
 const SEARCH = {};
