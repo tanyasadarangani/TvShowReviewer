@@ -29,7 +29,7 @@ const USER = {};
 USER.name = null;
 USER.pic = null;
 USER.lists = [];
-USER.reviews = {};
+USER.reviews = [];
 USER.getListObject = function userGetListObject(){
 	return {
 		name: "Unnamed List",
@@ -297,24 +297,26 @@ DETAIL.show = function detailShow(data){
 const REVIEW = {};
 REVIEW.get = function reviewGet(container, showId){
 	//if there's already a review
-	let review = USER.reviews["_" + showId];
-	if (review){
-		let p = document.createElement("p");
-		p.textContent = review;
-		container.append(p);
-		p.addEventListener("click", e => {
-			REVIEW.handleEditClick(e, showId);
-		});
-		return;
-	}
-	//no review yet
-	let button = document.createElement("button");
-	button.textContent = "Write Review";
-	container.append(button);
-	button.addEventListener("click", e => {
-		REVIEW.handleWriteClick(e, showId);
-	});
+  	fetch("/review/" + showId).then(res => res.json).then(res => {
+    	if (res.comments) { //review exists
+        	let p = document.createElement("p");
+            p.textContent = res.comments;
+            container.append(p);
+            p.addEventListener("click", e => {
+                REVIEW.handleEditClick(e, showId);
+            });
+        }
+      	else { //review doesn't exist yet
+        	let button = document.createElement("button");
+            button.textContent = "Write Review";
+            container.append(button);
+            button.addEventListener("click", e => {
+                REVIEW.handleWriteClick(e, showId);
+            });
+        }
+    });	
 }
+  //when you click on an exisiting review 
 REVIEW.handleEditClick = function reviewHandleEditClick(e, showId){
 	e.stopPropagation(); //stops the modal window from closing
 	let container = e.currentTarget.parentElement,
@@ -330,15 +332,21 @@ REVIEW.handleWriteClick = function reviewHandleWriteClick(e, showId){
 }
 REVIEW.getForm = function reviewGetForm(container, showId, reviewText){
 	let textarea = document.createElement("textarea"),
-		button = document.createElement("button");
+		saveButton = document.createElement("button"),
+        deleteButton = document.createElement("button");
 	if (reviewText) textarea.value = reviewText;
 	container.appendChild(textarea);
 	textarea.focus();
-	button.textContent = "Save Review";
-	container.appendChild(button);
-	button.addEventListener("click", e => {
+	saveButton.textContent = "Save Review";
+	container.appendChild(saveButton);
+	saveButton.addEventListener("click", e => {
 		REVIEW.handleSaveClick(e, showId);
 	});
+  	deleteButton.textContent = "Delete Review";
+  	container.appendChild(deleteButton);
+  	deleteButton.addEventListener("click", e => {
+    	REVIEW.handleDeleteClick(e, showId);
+    });
 }
 REVIEW.handleSaveClick = function reviewHandleSaveClick(e, showId){
 	e.stopPropagation(); //stops the modal window from closing
@@ -346,9 +354,23 @@ REVIEW.handleSaveClick = function reviewHandleSaveClick(e, showId){
 		container = e.target.parentElement;
 	e.target.previousElementSibling.outerHTML = "";
 	e.target.outerHTML = "";
-	USER.reviews["_" + showId] = review;
-	USER.update(false);
 	REVIEW.get(container, showId);
+  	fetch("/updatereview/" + showId, {
+    	method: "POST",
+      	headers: {"Accept": "application/json", "Content-Type": "application/json"},
+      	body: JSON.stringify({
+        	showid: showId,
+          	comments: review
+        })
+    });
+} 
+REVIEW.handleDeleteClick = function reviewHandleDeleteClick(e, showId){
+	e.stopPropagation(); //stops the modal window from closing
+	let container = e.target.parentElement;
+	e.target.previousElementSibling.outerHTML = "";
+	e.target.outerHTML = "";
+	REVIEW.get(container, showId);
+  	fetch("/deletereview/" + showId, {method: "POST"});
 }
 
 

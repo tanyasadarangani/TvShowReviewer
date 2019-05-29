@@ -6,11 +6,16 @@ var listSchema = new mongoose.Schema({
   shows: []
 });
 
+var reviewSchema = new mongoose.Schema({
+  showid: Number,
+  comments: String,
+});
+
 var userSchema = new mongoose.Schema({
     name: String,
     email: String,
     pic: String,
-    reviews: {},
+    reviews: [reviewSchema],
     lists: [listSchema],
     googleId: String
   }
