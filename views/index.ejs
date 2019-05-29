@@ -2,38 +2,10 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width">
+  <link href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="stylesheets/style.css" />
     <title>Véritable Critique</title>
-    <style>
-		body { margin: 0; }
-		header, footer { text-align: center; }
-		#profile { position: absolute; top: 10px; right: 10%; }
-		#profile img { max-width: 100px; max-height: 100px; border-radius: 50%; }
-		h2 { margin: 25px 10px 10px 5%; height: 25px; display: inline-block; }
-		h2:not(:first-of-type):hover { cursor: pointer; }
-  		ul { display: blcok; margin: 10px auto; list-style-type: none; padding: 5px; border: 2px solid black; text-align: center; font-size: 0; min-height: 50px; width: 90%; }
-		ul.dropping { border: 2px dotted black; }
-		#addList { display: inline-block; height: 100px; width: 40%; margin: 50px 10px; border: 1px solid transparent; border-radius: 10px; background-color: #eee; background-image: url("http://images.clipartpanda.com/plus-clipart-gray-plus.svg"); background-size: 50px; background-repeat: no-repeat; background-position: center center; }
-		#addList:hover { border: 1px solid green; cursor: pointer; }
-		#addList.dropping { background-color: green; }
-		#trash { display: inline-block; height: 100px; width: 40%; margin: 50px 10px; border: 1px solid transparent; border-radius: 10px; background-image: url("http://icons.iconarchive.com/icons/designcontest/ecommerce-business/256/trash-icon.png"); background-size: contain; background-repeat: no-repeat; background-position: center center; }
-		#trash.dropping { border: 1px dotted black; }
-		li { display: inline-block; margin: 5px; transition: transform 0.25s; }
-		li:hover { cursor: pointer; transform: scale(1.1); }
-		li img { height: 150px; }
-		input, button { padding: 5px 10px; border-radius: 5px; margin: 0 5px; }
-		input[type="button"], button { cursor: pointer; }
-		input[type="button"] { display: block; float: right; margin: 25px 5% 10px 10px; transform: scale(0.8) translateY(20px); }
-		aside { display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.6); }
-		aside.modal { display: flex; justify-content: center; align-items: center; }
-		aside section { background-color: white; padding: 10px; max-width: 650px; }
-		aside section p { text-align: left; }
-		aside article + p:hover { cursor: pointer; background-color: yellow; }
-		aside section img { float: left; margin: 10px; }
-		aside section h4 { clear: both; text-align: center;}
-		aside section button { display: block; margin: 5px auto; }
-		aside section textarea { display: block; width: 400px; max-width: 80%; height: 200px; margin: 10px auto; }
-  	</style>
     <script>
 ;((window)=>{
 	if (!window || !window.document) return;
@@ -46,6 +18,7 @@
       	if (user) {
             PROFILE.init();
             LIST.init();
+          	DETAIL.init();
           	MODAL.init();
             DRAG.init();
         }
@@ -293,6 +266,11 @@ LIST.handleBlur = function listHandleBlur(e){
 
 
 const DETAIL = {};
+DETAIL.init = function detailInit(){
+	document.querySelectorAll("ul:not(:first-of-type)").forEach(ul => {
+    	DETAIL.addEvents(ul);
+    });
+}
 DETAIL.addEvents = function detailAddEvents(container){
 	container.querySelectorAll("li").forEach(li => {
 		li.addEventListener("click", DETAIL.handleClick);
