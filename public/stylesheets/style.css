@@ -3,6 +3,12 @@
       margin: 0; 
       background-color:rgba(240, 29, 85, 0.6);
     }
+    h1 {
+      margin: 0;
+    }
+    h1 img {
+      width: 250px;
+    }
 		header, footer { 
       text-align: center; 
     }
