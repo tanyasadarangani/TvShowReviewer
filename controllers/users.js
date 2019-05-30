@@ -10,25 +10,36 @@ module.exports = {
 };
 
 function retrieveReview(req, res) {
-    let showid = req.params.showid;
+    let showid = Number(req.params.showid);
     let review = req.user.reviews.filter(function(r){
         return r.showid === showid;
     });
+    console.log('retrieveReview', showid, review);
     if(review.length)res.json(review[0]);
     else{res.json({})}
 }
 
 function updateReview(req, res) {
-    let showid = req.params.showid;
-    let review = req.user.reviews.filter(function(r){
+    let showid = Number(req.params.showid);
+    let index = req.user.reviews.findIndex(function(r){
         return r.showid === showid;
     });
-    if(review.length)review[0] = req.body;
+    console.log('req.body', req.body);
+    let review = {
+        showid: Number(req.body.showid), 
+        comments: req.body.comments
+    };
+    if(index >= 0){
+        req.user.reviews[index] = review;
+    }
     else {
-        req.user.reviews.push(req.body);
+        req.user.reviews.push(review);
     }
     req.user.save(function(err){
         if(err)console.log('review update error', err);
+        else{
+            res.send('review updated');
+        }
     });
 }
 function createReview(req, res) {
@@ -39,13 +50,16 @@ function createReview(req, res) {
     });
 }
 function deleteReview(req, res) {
-    let showid = req.params.showid;
+    let showid = Number(req.params.showid);
     req.user.reviews = req.user.reviews.filter(function(r) {
         return r.showid !== showid;
     });
 
     req.user.save(function(err){
         if(err)console.log('review update error', err);
+        else{
+            res.send('review deleted');
+        }
     });
 }
 
@@ -62,7 +76,6 @@ function index(req, res, next) {
     }
 }
     
-
 function update(req, res) {
     User.findByIdAndUpdate(req.params.id, req.body,{new: true}, function(err, user) {
         if (err)

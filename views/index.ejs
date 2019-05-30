@@ -15,7 +15,7 @@
       	//with or without logged in user
 		SEARCH.init();
       	//only with logged in user
-      	if (user) {
+      	if (window.user) {
             PROFILE.init();
             LIST.init();
           	DETAIL.init();
@@ -130,7 +130,7 @@ SEARCH.populateResults = function searchPopulateResults(data){
          html += img;
     });
     SEARCH.resultsBox.innerHTML = html;
-  	if (user){ //for logged-in users only
+  	if (window.user){ //for logged-in users only
 		DETAIL.addEvents(SEARCH.resultsBox);
 		DRAG.addDraggableEvents(SEARCH.resultsBox.querySelectorAll("li"));
     }
@@ -143,7 +143,7 @@ PROFILE.init = function profileInit(){
 	let button = document.querySelector("#profile");
 	button.addEventListener("click", PROFILE.handleClick);
 	PROFILE.pic = button.querySelector("img");
-  	if (user){
+  	if (window.user){
     	USER.name = PROFILE.pic.getAttribute("alt");
       	USER.pic = PROFILE.pic.src;
     }
@@ -297,7 +297,8 @@ DETAIL.show = function detailShow(data){
 const REVIEW = {};
 REVIEW.get = function reviewGet(container, showId){
 	//if there's already a review
-  	fetch("/review/" + showId).then(res => res.json).then(res => {
+  	fetch("user/review/" + showId).then(res => res.json()).then(res => {
+      	console.log("get review response:", res);
     	if (res.comments) { //review exists
         	let p = document.createElement("p");
             p.textContent = res.comments;
@@ -352,25 +353,31 @@ REVIEW.handleSaveClick = function reviewHandleSaveClick(e, showId){
 	e.stopPropagation(); //stops the modal window from closing
 	let review = e.target.previousElementSibling.value,
 		container = e.target.parentElement;
-	e.target.previousElementSibling.outerHTML = "";
+	e.target.previousElementSibling.outerHTML = ""; //textarea
+  	e.target.nextElementSibling.outerHTML = ""; //delete button
 	e.target.outerHTML = "";
-	REVIEW.get(container, showId);
-  	fetch("/updatereview/" + showId, {
+  	fetch("user/updatereview/" + showId, {
     	method: "POST",
       	headers: {"Accept": "application/json", "Content-Type": "application/json"},
       	body: JSON.stringify({
         	showid: showId,
           	comments: review
         })
+    }).then(res => res.text()).then(function(res){
+    	console.log(res);
+      	REVIEW.get(container, showId);
     });
 } 
 REVIEW.handleDeleteClick = function reviewHandleDeleteClick(e, showId){
 	e.stopPropagation(); //stops the modal window from closing
 	let container = e.target.parentElement;
-	e.target.previousElementSibling.outerHTML = "";
+  	e.target.previousElementSibling.previousElementSibling.outerHTML = ""; //textarea
+	e.target.previousElementSibling.outerHTML = ""; //save button
 	e.target.outerHTML = "";
-	REVIEW.get(container, showId);
-  	fetch("/deletereview/" + showId, {method: "POST"});
+  	fetch("user/deletereview/" + showId, {method: "POST"}).then(res => res.text()).then(function(res){
+      	console.log(res);
+      	REVIEW.get(container, showId);
+    });
 }
 
 
@@ -495,7 +502,7 @@ DRAG.isBefore = function dragIsBefore(elemA, elemB){
 })(window, document);
   	</script>
   	<% if (user) { %>
-        <script>const user = {_id:"<%= `${user.id}` %>"}; console.log(user);</script>
+        <script>window.user = {_id:"<%= `${user.id}` %>"}; console.log(window.user);</script>
     <% } %>
 </head>
 <body>
